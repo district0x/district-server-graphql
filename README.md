@@ -21,7 +21,8 @@ Include `[district.server.graphql]` in your CLJS file, where you use `mount/star
 You can pass following args to graphql module: 
 * `:port` Port at which HTTP server will start
 * `:path` Path of GraphQL endpoint
-* `:middlewares` Collection of expressjs [middlewares](http://expressjs.com/en/guide/using-middleware.html) you want to install
+* `:middlewares` Collection of expressjs [middlewares](http://expressjs.com/en/guide/using-middleware.html) you want to install.
+See list of [district-server-middlewares](https://github.com/search?q=topic%3Adistrict-server-middleware+org%3Adistrict0x&type=Repositories).
 * All [GraphQL options](https://github.com/graphql/express-graphql#options) as kebab-cased keywords  
 
 ```clojure
