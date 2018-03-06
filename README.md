@@ -6,7 +6,7 @@ Clojurescript-node.js [mount](https://github.com/tolitius/mount) module for a di
 It uses [expressjs](https://expressjs.com/) and [express-graphql](https://github.com/graphql/express-graphql) to set up the server.
 
 ## Installation
-Add `[district0x/district-server-graphql "1.0.0"]` into your project.clj  
+Add `[district0x/district-server-graphql "1.0.1"]` into your project.clj  
 Include `[district.server.graphql]` in your CLJS file, where you use `mount/start`
 
 ## API Overview
@@ -14,6 +14,7 @@ Include `[district.server.graphql]` in your CLJS file, where you use `mount/star
 **Warning:** district0x modules are still in early stages, therefore API can change in a future.
 
 - [district.server.graphql](#districtservergraphql)
+- [run-query](#run-query)
 - [district.server.graphql.middleware](#districtservergraphqlmiddleware)
   - [create-graphql-middleware](#create-graphql-middleware)
 
@@ -49,6 +50,18 @@ That's all you need to do to set up GraphQL server!
 `district-server-graphql` gets initial args from config provided by `district-server-config/config` under the key `:graphql`. These args are then merged together with ones passed to `mount/with-args`.
 
 If you wish to use custom modules instead of dependencies above while still using `district-server-graphql`, you can easily do so by [mount's states swapping](https://github.com/tolitius/mount#swapping-states-with-states).
+
+## district.server.graphql
+This namespace contains mount module as well as some helper functions
+
+#### <a name="run-query">`run-query [query root-value & [callback]]`
+Will run GraphQL query. Transforms response from JS objects into CLJS data structures. 
+If no callback is given, will return channel. 
+
+```clojure
+(<! (run-query "{hello}" {:hello (constantly "Hello world")}))
+;; => {:data {:hello "Hello world"}}
+```
 
 ## district.server.graphql.middleware
 This namespace contains function for creating GraphQL expressjs middleware

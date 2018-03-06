@@ -4,7 +4,7 @@
     [cljs.core.async :refer [<!]]
     [cljs.nodejs :as nodejs]
     [cljs.test :refer-macros [deftest is testing use-fixtures async]]
-    [district.server.graphql]
+    [district.server.graphql :refer [run-query]]
     [mount.core :as mount])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -18,8 +18,14 @@
 
 (deftest tests
   (async done
-    (let [schema "type Query { hello: String}"
-          root {:hello (constantly "Hello world")}]
+    (let [schema "
+          type Query {
+            search: [Item]
+          }
+          type Item {
+            title: String
+          }"
+          root {:search (constantly (clj->js [{:title "abc"}]))}]
 
       (-> (mount/with-args
             {:graphql {:port 6333
@@ -27,13 +33,15 @@
                        :schema schema
                        :root-value root
                        :graphiql true}})
-        (mount/start)))
+        (mount/start))
 
-    (go
-      (is (= (-> (<! (client/post "http://localhost:6333/graphql"
-                                  {:json-params {:query "{hello}"}}))
-               :body
-               :data)
-             {:hello "Hello world"}))
-      (done))))
+      (go
+        (is (:data (<! (run-query "{search {title}}" root)))
+            {:search [{:title "abc"}]})
+        (is (= (-> (<! (client/post "http://localhost:6333/graphql"
+                                    {:json-params {:query "{search {title}}"}}))
+                 :body
+                 :data)
+               {:search [{:title "abc"}]}))
+        (done)))))
 
