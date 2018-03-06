@@ -20,8 +20,8 @@
 (def gql (aget graphql-module "graphql"))
 (def build-schema (aget graphql-module "buildSchema"))
 
-(defn stop [api-server]
-  (.close (:server @api-server)))
+(defn stop [graphql]
+  (.close (:server @graphql)))
 
 
 (defn- error-middleware? [f]
@@ -52,6 +52,12 @@
                 (js->clj res :keywordize-keys true)))
 
 
+(defn restart [opts]
+  (let [opts (merge (:opts @graphql) opts)]
+    (mount/stop #'district.server.graphql/graphql)
+    (mount/start-with-args {:graphql opts} #'district.server.graphql/graphql)))
+
+
 (defn run-query
   ([query]
    (let [ch (chan)]
@@ -71,5 +77,6 @@
     {:app app
      :server (.listen app port)
      :schema (:schema opts)
-     :root-value (clj->js (:root-value opts))}))
+     :root-value (clj->js (:root-value opts))
+     :opts opts}))
 
