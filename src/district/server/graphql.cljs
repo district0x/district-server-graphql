@@ -53,12 +53,12 @@
 
 
 (defn run-query
-  ([query root-value]
+  ([query]
    (let [ch (chan)]
-     (run-query query root-value #(put! ch %))
+     (run-query query #(put! ch %))
      ch))
-  ([query root-value callback]
-   (.then (gql (:schema @graphql) query (clj->js root-value)) #(callback (transform-result-vals %)))))
+  ([query callback]
+   (.then (gql (:schema @graphql) query (:root-value @graphql)) #(callback (transform-result-vals %)))))
 
 
 (defn start [{:keys [:port :middlewares :path] :as opts}]
@@ -68,5 +68,8 @@
     (install-middlewares! app [{:path path :middleware (create-graphql-middleware opts)}])
     (install-middlewares! app (remove error-middleware? middlewares))
     (install-middlewares! app (filter error-middleware? middlewares))
-    {:app app :server (.listen app port) :schema (:schema opts)}))
+    {:app app
+     :server (.listen app port)
+     :schema (:schema opts)
+     :root-value (clj->js (:root-value opts))}))
 

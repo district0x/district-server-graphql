@@ -1,4 +1,4 @@
-(defproject district0x/district-server-graphql "1.0.1"
+(defproject district0x/district-server-graphql "1.0.2"
   :description "district0x server module for setting up GraphQL server"
   :url "https://github.com/district0x/district-server-graphql"
   :license {:name "Eclipse Public License"

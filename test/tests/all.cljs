@@ -36,7 +36,7 @@
         (mount/start))
 
       (go
-        (is (:data (<! (run-query "{search {title}}" root)))
+        (is (:data (<! (run-query "{search {title}}")))
             {:search [{:title "abc"}]})
         (is (= (-> (<! (client/post "http://localhost:6333/graphql"
                                     {:json-params {:query "{search {title}}"}}))
