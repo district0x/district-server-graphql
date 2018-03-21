@@ -6,7 +6,7 @@ Clojurescript-node.js [mount](https://github.com/tolitius/mount) module for a di
 It uses [expressjs](https://expressjs.com/) and [express-graphql](https://github.com/graphql/express-graphql) to set up the server.
 
 ## Installation
-Add `[district0x/district-server-graphql "1.0.8"]` into your project.clj  
+Add `[district0x/district-server-graphql "1.0.9"]` into your project.clj  
 Include `[district.server.graphql]` in your CLJS file, where you use `mount/start`
 
 ## API Overview
@@ -24,6 +24,8 @@ You can pass following args to graphql module:
 * `:path` Path of GraphQL endpoint
 * `:middlewares` Collection of expressjs [middlewares](http://expressjs.com/en/guide/using-middleware.html) you want to install.
 See list of [district-server-middlewares](https://github.com/search?q=topic%3Adistrict-server-middleware+org%3Adistrict0x&type=Repositories).
+* `:gql-name->kw` Function for converting GraphQL names into keywords. Default: [gql-name->kw](https://github.com/district0x/district-graphql-utils#gql-name-kw)
+* `:kw->gql-name` Function for converting keywords into GraphQL names. Default: [kw->gql-name](https://github.com/district0x/district-graphql-utils#kw-gql-name)
 * All [GraphQL options](https://github.com/graphql/express-graphql#options) as kebab-cased keywords  
 
 ```clojure

@@ -44,15 +44,18 @@
     (mount/start-with-args {:graphql opts} #'district.server.graphql/graphql)))
 
 
-(defn run-query [query]
+(defn run-query [query & [{:keys [:kw->gql-name :gql-name->kw]}]]
   (let [query (if-not (string? query)
-                (graphql-query (merge {:transform-name-fn graphql-utils/kw->gql-name}
+                (graphql-query (merge {:transform-name-fn (or kw->gql-name
+                                                              (:kw->gql-name (:opts @graphql)))}
                                       query))
                 query)]
-    (graphql-utils/js->clj-response (gql-sync (:schema @graphql) query (:root-value @graphql)))))
+    (graphql-utils/js->clj-response (gql-sync (:schema @graphql) query (:root-value @graphql))
+                                    {:gql-name->kw (or gql-name->kw
+                                                       (:gql-name->kw (:opts @graphql)))})))
 
 
-(defn start [{:keys [:port :middlewares :path] :as opts}]
+(defn start [{:keys [:port :middlewares :path :kw->gql-name :gql-name->kw] :as opts}]
   (let [app (express)
         middlewares (flatten middlewares)
         opts (cond-> opts
@@ -60,7 +63,8 @@
                (update :schema build-schema)
 
                (map? (:root-value opts))
-               (update :root-value graphql-utils/clj->js-root-value))]
+               (update :root-value #(graphql-utils/clj->js-root-value % {:kw->gql-name kw->gql-name
+                                                                         :gql-name->kw gql-name->kw})))]
     (install-middlewares! app [(cors) {:path path :middleware (create-graphql-middleware opts)}])
     (install-middlewares! app (remove error-middleware? middlewares))
     (install-middlewares! app (filter error-middleware? middlewares))
