@@ -2,7 +2,7 @@
   (:require
     [cljs.core.async :refer [<! chan put!]]
     [cljs.nodejs :as nodejs]
-    [district.graphql-utls :as graphql-utils]
+    [district.graphql-utils :as graphql-utils]
     [district.server.config :refer [config]]
     [district.server.graphql.middleware :refer [create-graphql-middleware]]
     [graphql-query.core :refer [graphql-query]]
