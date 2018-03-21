@@ -2,7 +2,7 @@
   (:require
     [cljs.core.async :refer [<! chan put!]]
     [cljs.nodejs :as nodejs]
-    [clojure.walk :as walk]
+    [district.graphql-utls :as graphql-utils]
     [district.server.config :refer [config]]
     [district.server.graphql.middleware :refer [create-graphql-middleware]]
     [mount.core :as mount :refer [defstate]]))
@@ -17,8 +17,9 @@
 
 (def express (nodejs/require "express"))
 (def graphql-module (nodejs/require "graphql"))
-(def gql (aget graphql-module "graphql"))
+(def gql-sync (aget graphql-module "graphqlSync"))
 (def build-schema (aget graphql-module "buildSchema"))
+(def cors (nodejs/require "cors"))
 
 (defn stop [graphql]
   (.close (:server @graphql)))
@@ -36,47 +37,31 @@
       (.use app middleware))))
 
 
-(defn- js-obj->clj [obj]
-  (reduce (fn [acc key]
-            (assoc acc (keyword key) (aget obj key)))
-          {}
-          (js->clj (js-keys obj))))
-
-
-(defn- transform-result-vals [res]
-  (walk/prewalk (fn [x]
-                  (if (and (nil? (type x))
-                           (seq (js-keys x)))
-                    (js-obj->clj x)
-                    (js->clj x)))
-                (js->clj res :keywordize-keys true)))
-
-
 (defn restart [opts]
   (let [opts (merge (:opts @graphql) opts)]
     (mount/stop #'district.server.graphql/graphql)
     (mount/start-with-args {:graphql opts} #'district.server.graphql/graphql)))
 
 
-(defn run-query
-  ([query]
-   (let [ch (chan)]
-     (run-query query #(put! ch %))
-     ch))
-  ([query callback]
-   (.then (gql (:schema @graphql) query (:root-value @graphql)) #(callback (transform-result-vals %)))))
+(defn run-query [query]
+  (graphql-utils/js->clj-response (gql-sync (:schema @graphql) query (:root-value @graphql))))
 
 
 (defn start [{:keys [:port :middlewares :path] :as opts}]
   (let [app (express)
         middlewares (flatten middlewares)
-        opts (update opts :schema #(if (string? %) (build-schema %) %))]
-    (install-middlewares! app [{:path path :middleware (create-graphql-middleware opts)}])
+        opts (cond-> opts
+               (string? (:schema opts))
+               (update :schema build-schema)
+
+               (map? (:root-value opts))
+               (update :root-value graphql-utils/clj->js-root-value))]
+    (install-middlewares! app [(cors) {:path path :middleware (create-graphql-middleware opts)}])
     (install-middlewares! app (remove error-middleware? middlewares))
     (install-middlewares! app (filter error-middleware? middlewares))
     {:app app
      :server (.listen app port)
      :schema (:schema opts)
-     :root-value (clj->js (:root-value opts))
+     :root-value (:root-value (:root-value opts))
      :opts opts}))
 

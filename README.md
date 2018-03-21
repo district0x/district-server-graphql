@@ -6,7 +6,7 @@ Clojurescript-node.js [mount](https://github.com/tolitius/mount) module for a di
 It uses [expressjs](https://expressjs.com/) and [express-graphql](https://github.com/graphql/express-graphql) to set up the server.
 
 ## Installation
-Add `[district0x/district-server-graphql "1.0.3"]` into your project.clj  
+Add `[district0x/district-server-graphql "1.0.5"]` into your project.clj  
 Include `[district.server.graphql]` in your CLJS file, where you use `mount/start`
 
 ## API Overview
@@ -54,12 +54,11 @@ If you wish to use custom modules instead of dependencies above while still usin
 ## district.server.graphql
 This namespace contains mount module as well as some helper functions
 
-#### <a name="run-query">`run-query [query & [callback]]`
+#### <a name="run-query">`run-query [query]`
 Will run GraphQL query. Transforms response from JS objects into CLJS data structures. 
-If no callback is given, will return channel. 
 
 ```clojure
-(<! (run-query "{hello}"))
+(run-query "{hello}")
 ;; => {:data {:hello "Hello world"}}
 ```
 

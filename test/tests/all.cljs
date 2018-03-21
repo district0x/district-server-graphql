@@ -25,7 +25,7 @@
           type Item {
             title: String
           }"
-          root {:search (constantly (clj->js [{:title "abc"}]))}]
+          root {:search (constantly [{:title "abc"}])}]
 
       (-> (mount/with-args
             {:graphql {:port 6333
@@ -35,9 +35,10 @@
                        :graphiql true}})
         (mount/start))
 
+      (is (:data (run-query "{search {title}}"))
+          {:search [{:title "abc"}]})
+
       (go
-        (is (:data (<! (run-query "{search {title}}")))
-            {:search [{:title "abc"}]})
         (is (= (-> (<! (client/post "http://localhost:6333/graphql"
                                     {:json-params {:query "{search {title}}"}}))
                  :body

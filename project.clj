@@ -1,17 +1,19 @@
-(defproject district0x/district-server-graphql "1.0.3"
+(defproject district0x/district-server-graphql "1.0.5"
   :description "district0x server module for setting up GraphQL server"
   :url "https://github.com/district0x/district-server-graphql"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[camel-snake-kebab "0.4.0"]
+                 [district0x/district-graphql-utils "1.0.0"]
                  [district0x/district-server-config "1.0.1"]
                  [mount "0.1.11"]
                  [org.clojure/clojurescript "1.9.946"]]
 
   :npm {:dependencies [[express "4.15.3"]
-                       [graphql "0.13.1"]
-                       [express-graphql "0.6.12"]]
+                       [cors "2.8.4"]
+                       [express-graphql "0.6.12"]
+                       [graphql "0.13.1"]]
         :devDependencies [[ws "2.0.1"]
                           [xhr2 "0.1.4"]]}
 
