@@ -67,6 +67,6 @@
     {:app app
      :server (.listen app port)
      :schema (:schema opts)
-     :root-value (:root-value (:root-value opts))
+     :root-value (:root-value opts)
      :opts opts}))
 
