@@ -46,9 +46,8 @@
 
 (defn run-query [query & [{:keys [:kw->gql-name :gql-name->kw]}]]
   (let [query (if-not (string? query)
-                (graphql-query (merge {:transform-name-fn (or kw->gql-name
-                                                              (:kw->gql-name (:opts @graphql)))}
-                                      query))
+                (graphql-query query {:kw->gql-name (or kw->gql-name
+                                                        (:kw->gql-name (:opts @graphql)))})
                 query)]
     (graphql-utils/js->clj-response (gql-sync (:schema @graphql) query (:root-value @graphql))
                                     {:gql-name->kw (or gql-name->kw
