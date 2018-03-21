@@ -35,6 +35,9 @@
                        :graphiql true}})
         (mount/start))
 
+      (is (:data (run-query {:queries [[:search [:title]]]}))
+          {:search [{:title "abc"}]})
+
       (is (:data (run-query "{search {title}}"))
           {:search [{:title "abc"}]})
 

@@ -5,6 +5,7 @@
     [district.graphql-utls :as graphql-utils]
     [district.server.config :refer [config]]
     [district.server.graphql.middleware :refer [create-graphql-middleware]]
+    [graphql-query.core :refer [graphql-query]]
     [mount.core :as mount :refer [defstate]]))
 
 (declare start)
@@ -44,7 +45,11 @@
 
 
 (defn run-query [query]
-  (graphql-utils/js->clj-response (gql-sync (:schema @graphql) query (:root-value @graphql))))
+  (let [query (if-not (string? query)
+                (graphql-query (merge {:transform-name-fn graphql-utils/kw->gql-name}
+                                      query))
+                query)]
+    (graphql-utils/js->clj-response (gql-sync (:schema @graphql) query (:root-value @graphql)))))
 
 
 (defn start [{:keys [:port :middlewares :path] :as opts}]
