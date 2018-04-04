@@ -1,15 +1,22 @@
 (ns district.server.graphql.middleware
   (:require
     [camel-snake-kebab.core :as cs :include-macros true]
-    [cljs.nodejs :as nodejs]))
+    [cljs.nodejs :as nodejs]
+    [district.graphql-utils :as graphql-utils]))
 
-(def graphql-module (nodejs/require "graphql"))
+(def GraphQL (nodejs/require "graphql"))
 (def graphqlHTTP (nodejs/require "express-graphql"))
-(def build-schema (aget graphql-module "buildSchema"))
+(def gql-build-schema (aget GraphQL "buildSchema"))
+
+(defn build-schema [schema]
+  (cond-> schema
+    (string? schema) gql-build-schema
+    true graphql-utils/add-keyword-type
+    true graphql-utils/add-date-type))
 
 (defn create-graphql-middleware [opts]
   (-> opts
-    (update :schema #(if (string? %) (build-schema %) %))
+    (update :schema build-schema)
     (->> (map (fn [[k v]] [(cs/->camelCaseString k) v])))
     (->> (into {}))
     clj->js

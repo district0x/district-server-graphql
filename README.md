@@ -6,7 +6,7 @@ Clojurescript-node.js [mount](https://github.com/tolitius/mount) module for a di
 It uses [expressjs](https://expressjs.com/) and [express-graphql](https://github.com/graphql/express-graphql) to set up the server.
 
 ## Installation
-Add `[district0x/district-server-graphql "1.0.10"]` into your project.clj  
+Add `[district0x/district-server-graphql "1.0.11"]` into your project.clj  
 Include `[district.server.graphql]` in your CLJS file, where you use `mount/start`
 
 ## API Overview

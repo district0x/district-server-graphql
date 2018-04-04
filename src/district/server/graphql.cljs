@@ -4,7 +4,7 @@
     [cljs.nodejs :as nodejs]
     [district.graphql-utils :as graphql-utils]
     [district.server.config :refer [config]]
-    [district.server.graphql.middleware :refer [create-graphql-middleware]]
+    [district.server.graphql.middleware :refer [build-schema create-graphql-middleware]]
     [graphql-query.core :refer [graphql-query]]
     [mount.core :as mount :refer [defstate]]))
 
@@ -19,7 +19,6 @@
 (def express (nodejs/require "express"))
 (def graphql-module (nodejs/require "graphql"))
 (def gql-sync (aget graphql-module "graphqlSync"))
-(def build-schema (aget graphql-module "buildSchema"))
 (def cors (nodejs/require "cors"))
 
 (defn stop [graphql]
@@ -58,7 +57,7 @@
   (let [app (express)
         middlewares (flatten middlewares)
         opts (cond-> opts
-               (string? (:schema opts))
+               true
                (update :schema build-schema)
 
                (map? (:root-value opts))
