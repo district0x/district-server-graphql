@@ -40,7 +40,7 @@
 (defn restart [opts]
   (let [opts (merge (:opts @graphql) opts)]
     (mount/stop #'district.server.graphql/graphql)
-    (mount/start-with-args {:graphql opts} #'district.server.graphql/graphql)))
+    (mount/start-with-args (merge (mount/args) {:graphql opts}) #'district.server.graphql/graphql)))
 
 
 (defn run-query [query & [{:keys [:kw->gql-name :gql-name->kw]}]]
@@ -56,13 +56,18 @@
 (defn start [{:keys [:port :middlewares :path :kw->gql-name :gql-name->kw] :as opts}]
   (let [app (express)
         middlewares (flatten middlewares)
+        kw->gql-name (or kw->gql-name graphql-utils/kw->gql-name)
+        gql-name->kw (or gql-name->kw graphql-utils/gql-name->kw)
         opts (cond-> opts
                true
                (update :schema build-schema)
 
                (map? (:root-value opts))
                (update :root-value #(graphql-utils/clj->js-root-value % {:kw->gql-name kw->gql-name
-                                                                         :gql-name->kw gql-name->kw})))]
+                                                                         :gql-name->kw gql-name->kw}))
+
+               true
+               (merge {:kw->gql-name kw->gql-name :gql-name->kw gql-name->kw}))]
     (install-middlewares! app [(cors) {:path path :middleware (create-graphql-middleware opts)}])
     (install-middlewares! app (remove error-middleware? middlewares))
     (install-middlewares! app (filter error-middleware? middlewares))
