@@ -14,7 +14,8 @@
   :npm {:dependencies [[express "4.15.3"]
                        [cors "2.8.4"]
                        [express-graphql "0.6.12"]
-                       [graphql "0.13.1"]]
+                       [graphql "0.13.1"]
+                       [graphql-tools "3.0.1"]]
         :devDependencies [[ws "2.0.1"]
                           [xhr2 "0.1.4"]]}
 
