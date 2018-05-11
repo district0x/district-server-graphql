@@ -76,13 +76,14 @@
                         fields-map)))
               {}
               resolvers-map)))
-
-(defn default-field-resolver
+ 
+(defn build-default-field-resolver
   "Default resolver that tries to return a keyword property
   given a gql-name, assuming obj is a map"
-  [gql-name->kw obj _ _ info]
-  (when (map? obj)
-   (get obj (gql-name->kw (.-fieldName info)))))
+  [gql-name->kw]
+  (fn [obj _ _ info]
+    (when (map? obj)
+     (get obj (gql-name->kw (.-fieldName info))))))
 
 (defn start [{:keys [:port :middlewares :path :kw->gql-name :gql-name->kw :resolvers :field-resolver] :as opts}]
   (let [app (express)
@@ -107,6 +108,6 @@
      :schema (:schema opts)
      :root-value (:root-value opts)
      :resolvers resolvers
-     :field-resolver (or field-resolver (partial default-field-resolver gql-name->kw))
+     :field-resolver field-resolver
      :opts opts}))
 

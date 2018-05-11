@@ -1,13 +1,15 @@
 (ns tests.all
-  (:require [cljs.nodejs :as nodejs]
-            [cljs.test :refer-macros [deftest use-fixtures is async testing]]
-            [district.graphql-utils :as graphql-utils]
-            [district.server.graphql :refer [run-query]]
-            [graphql-query.core :refer [graphql-query]]
-            [mount.core :as mount]
+  (:require [cljs-http.client :as client]
             [cljs.core.async :refer [<!]]
-            [cljs-http.client :as client])
-  (:require-macros [cljs.core.async.macros :refer [go]])) 
+            [cljs.nodejs :as nodejs]
+            [cljs.test :refer-macros [async deftest is testing use-fixtures]]
+            [district.graphql-utils :as graphql-utils]
+            [district.server.graphql
+             :refer
+             [build-default-field-resolver run-query]]
+            [graphql-query.core :refer [graphql-query]]
+            [mount.core :as mount])
+  (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (set! js/XMLHttpRequest (nodejs/require "xhr2"))
 
@@ -16,7 +18,7 @@
   {:after
    (fn []
      (mount/stop))})
-
+ 
 (deftest tests-root-value
   (let [schema "
           type Query {
@@ -36,21 +38,24 @@
                      :graphiql true}})
         (mount/start))
 
-    (is (:data (run-query {:queries [[:search [:title]]]}))
-        {:search [{:title "abc"}]})
+    (testing "run-query should work with clj map query"
+      (is (= (:data (run-query {:queries [[:search [:title]]]}))
+             {:search [{:title "abc"}]})))
 
-    (is (:data (run-query "{search {title}}"))
-        {:search [{:title "abc"}]})
-
+    (testing "run-query should work with string query"
+      (is (= (:data (run-query "{search {title}}"))
+             {:search [{:title "abc"}]})))
+ 
     (async done
            (go
-             (is (= (-> (<! (client/post "http://localhost:6333/graphql"
-                                         {:json-params {:query "{search {title}}"}}))
-                        :body
-                        :data)
-                    {:search [{:title "abc"}]}))
-             (done)))))
-
+             (testing "Query should work via HTTP"
+               (is (= (-> (<! (client/post "http://localhost:6333/graphql"
+                                           {:json-params {:query "{search{title}}"}}))
+                          :body
+                          :data)
+                      {:search [{:title "abc"}]})))
+             (done))))) 
+ 
 ;; https://github.com/apollographql/graphql-tools/
 (deftest graphql-tools-site-test
   (let [all-posts (atom [{:id "P1" :title "Post1" :author "A1" :votes 0}
@@ -86,7 +91,6 @@
         resolvers {:Query {:posts (fn [obj {:keys [min-votes] :as args}]
                                     (filter #(> (:votes %) min-votes) @all-posts))}
                    :Mutation {:upvote-post (fn [obj {:keys [post-id] :as args}]
-                                             (.log js/console "Updating !!!!!!!!!!1" post-id)
                                              (swap! @all-posts
                                                     #(mapv (fn [p]
                                                              (if (= (:id p) post-id)
@@ -103,27 +107,28 @@
                      :path "/graphql"
                      :schema schema
                      :resolvers resolvers
+                     :field-resolver (build-default-field-resolver graphql-utils/gql-name->kw)
                      :graphiql true}})
         (mount/start))
     (let [q1 (graphql-query {:queries [[:posts {:min-votes 4}
                                         [:id :title :votes [:author [:id :first-name]]]]]}
-                            {:kw->gql-name graphql-utils/kw->gql-name}) 
-          q1-results [{:id "P2" :title "Post2" :author {:id "A1" :first-name "FN1"} :votes 5}
-                      {:id "P3" :title "Post3" :author {:id "A1" :first-name "FN1"} :votes 10}]]
+                            {:kw->gql-name graphql-utils/kw->gql-name})] 
  
       (testing "Query should work if called with run-query"
         (is (= (get-in (run-query q1) [:data :posts])
-              q1-results)))
+               [{:id "P2" :title "Post2" :author {:id "A1" :first-name "FN1"} :votes 5}
+                {:id "P3" :title "Post3" :author {:id "A1" :first-name "FN1"} :votes 10}])))
   
-      (testing "Query should work if called from HTTP"
-        (async done
-               (go
+      (async done
+             (go
+               (testing "Query should work if called from HTTP"
                  (let [post-result (<! (client/post "http://localhost:6333/graphql"
                                                     {:json-params {:query q1}}))]
-                   (println post-result)
                    (is (= (-> post-result
                               :body
                               :data
                               :posts)
-                          q1-results)))
-                 (done)))))))
+                          [{:id "P2" :title "Post2" :author {:id "A1" :firstName "FN1"} :votes 5}
+                           {:id "P3" :title "Post3" :author {:id "A1" :firstName "FN1"} :votes 10}]))))
+               (done))))))
+ 
