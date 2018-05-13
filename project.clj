@@ -1,4 +1,4 @@
-(defproject district0x/district-server-graphql "1.0.12"
+(defproject district0x/district-server-graphql "1.1.0"
   :description "district0x server module for setting up GraphQL server"
   :url "https://github.com/district0x/district-server-graphql"
   :license {:name "Eclipse Public License"
@@ -13,8 +13,9 @@
 
   :npm {:dependencies [[express "4.15.3"]
                        [cors "2.8.4"]
-                       [express-graphql "0.6.12"]
-                       [graphql "0.13.1"]]
+                       [express-graphql "0.6.13"]
+                       [graphql "0.13.1"]
+                       [graphql-tools "3.0.1"]]
         :devDependencies [[ws "2.0.1"]
                           [xhr2 "0.1.4"]]}
 
