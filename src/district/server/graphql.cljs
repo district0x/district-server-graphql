@@ -60,7 +60,7 @@
 (defn- build-resolvers
   "Given a map like {:Type {:field1 resolver-fn}} and
   a kw->gql-name, build a resolvers map as required by graphql-tools."
-  [resolvers-map kw->gql-name]
+  [resolvers-map kw->gql-name gql-name->kw]
   (clj->js
    (reduce-kv (fn [r type-name fields-map]
                 (assoc r (kw->gql-name type-name) 
@@ -69,7 +69,7 @@
                           (assoc fm (kw->gql-name field-name)
                                  (fn [o args ctx info]
                                    (field-fn o
-                                             (transform-keys kw->gql-name args)
+                                             (transform-keys gql-name->kw (js->clj args))
                                              ctx
                                              info))))
                         {}
@@ -92,7 +92,7 @@
         gql-name->kw (or gql-name->kw graphql-utils/gql-name->kw)
         opts (cond-> opts
                true
-               (update :schema (partial build-schema (build-resolvers resolvers kw->gql-name)))      
+               (update :schema (partial build-schema (build-resolvers resolvers kw->gql-name gql-name->kw)))      
 
                (map? (:root-value opts))
                (update :root-value #(graphql-utils/clj->js-root-value % {:kw->gql-name kw->gql-name
