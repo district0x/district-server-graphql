@@ -17,6 +17,8 @@ Include `[district.server.graphql]` in your CLJS file, where you use `mount/star
 - [run-query](#run-query)
 - [district.server.graphql.middleware](#districtservergraphqlmiddleware)
   - [create-graphql-middleware](#create-graphql-middleware)
+- [district.server.graphql.utils](#districtservergraphqlutils)
+  - [build-schema](#build-schema)
 
 ## Usage
 You can pass following args to graphql module: 
@@ -74,6 +76,51 @@ This namespace contains function for creating GraphQL expressjs middleware
 #### <a name="create-graphql-middleware">`create-graphql-middleware [opts]`
 Creates expressjs graphql middleware. Pass same opt as you'd pass into [GraphQL options](https://github.com/graphql/express-graphql#options). 
 For schema you can pass either string or built GraphQL object.  
+
+### <a name="districtservergraphqlutils"> district.server.graphql.utils
+
+#### <a name="build-schema">`build-schema [schema-str resolvers-map {:keys [kw->gql-name gql-name->kw]}]`
+Builds a GraphQLSchema from a schema string and a resolvers map.
+- schema-str: A string containig a graphql schema definition.
+- resolvers-map: A map like {:Type {:field1 resolver-fn}}.
+- kw->gql-name: A fn for serializing keywords to gql names.
+- gql-name->kw: A fn for parsing keywords from gql names.
+
+```clojure
+(let [schema "type Author {
+                         id: ID! 
+                         firstName: String
+                         lastName: String
+                         posts: [Post]
+                       }
+                     
+                       type Post {
+                         id: ID!
+                         title: String
+                         author: Author
+                         votes: Int
+                       }
+                     
+                       type Query {
+                         posts(minVotes: Int): [Post]
+                       }
+                     
+                       type Mutation {
+                         upvotePost (postId: ID!): Post
+                       }
+                     
+                       schema {
+                         query: Query
+                         mutation: Mutation
+                       }"
+      resolvers {:Query {:posts (fn [obj {:keys [min-votes] :as args}])}
+                 :Mutation {:upvote-post (fn [obj {:keys [post-id] :as args}])}
+                 :Author {:posts (fn [{:keys [posts] :as author}])}
+                 :Post {:author (fn [{:keys [author] :as post}])}}]
+  
+  (build-schema schema resolvers {:kw->gql-name kw->gql-name
+                                  :gql-name->kw gql-name->kw}))
+```
 
 ## Development
 ```bash
