@@ -48,7 +48,11 @@
                 (graphql-query query {:kw->gql-name (or kw->gql-name
                                                         (:kw->gql-name (:opts @graphql)))})
                 query)]
-    (graphql-utils/js->clj-response (gql-sync (:schema @graphql) query (:root-value @graphql))
+    (graphql-utils/js->clj-response (gql-sync (:schema @graphql)
+                                              query
+                                              (:root-value @graphql)
+                                              nil nil nil
+                                              (:field-resolver @graphql))
                                     {:gql-name->kw (or gql-name->kw
                                                        (:gql-name->kw (:opts @graphql)))})))
 
@@ -75,5 +79,6 @@
      :server (.listen app port)
      :schema (:schema opts)
      :root-value (:root-value opts)
+     :field-resolver (:field-resolver opts)
      :opts opts}))
 
