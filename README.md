@@ -2,11 +2,11 @@
 
 [![Build Status](https://travis-ci.org/district0x/district-server-graphql.svg?branch=master)](https://travis-ci.org/district0x/district-server-graphql)
 
-Clojurescript-node.js [mount](https://github.com/tolitius/mount) module for a district server, that sets up [GraphQL](http://graphql.org/) server. 
+Clojurescript-node.js [mount](https://github.com/tolitius/mount) module for a district server, that sets up [GraphQL](http://graphql.org/) server.
 It uses [expressjs](https://expressjs.com/) and [express-graphql](https://github.com/graphql/express-graphql) to set up the server.
 
 ## Installation
-Add `[district0x/district-server-graphql "1.0.15"]` into your project.clj  
+Add `[district0x/district-server-graphql "1.0.16"]` into your project.clj
 Include `[district.server.graphql]` in your CLJS file, where you use `mount/start`
 
 ## API Overview
@@ -21,14 +21,14 @@ Include `[district.server.graphql]` in your CLJS file, where you use `mount/star
   - [build-schema](#build-schema)
 
 ## Usage
-You can pass following args to graphql module: 
+You can pass following args to graphql module:
 * `:port` Port at which HTTP server will start
 * `:path` Path of GraphQL endpoint
 * `:middlewares` Collection of expressjs [middlewares](http://expressjs.com/en/guide/using-middleware.html) you want to install.
 See list of [district-server-middlewares](https://github.com/search?q=topic%3Adistrict-server-middleware+org%3Adistrict0x&type=Repositories).
 * `:gql-name->kw` Function for converting GraphQL names into keywords. Default: [gql-name->kw](https://github.com/district0x/district-graphql-utils#gql-name-kw)
 * `:kw->gql-name` Function for converting keywords into GraphQL names. Default: [kw->gql-name](https://github.com/district0x/district-graphql-utils#kw-gql-name)
-* All [GraphQL options](https://github.com/graphql/express-graphql#options) as kebab-cased keywords  
+* All [GraphQL options](https://github.com/graphql/express-graphql#options) as kebab-cased keywords
 
 ```clojure
 (ns my-district
@@ -59,9 +59,9 @@ If you wish to use custom modules instead of dependencies above while still usin
 This namespace contains mount module as well as some helper functions
 
 #### <a name="run-query">`run-query [query]`
-Will run GraphQL query. Transforms response from JS objects into CLJS data structures.  
-You can pass query string or [graphql-query](https://github.com/district0x/graphql-query) data structure. 
- 
+Will run GraphQL query. Transforms response from JS objects into CLJS data structures.
+You can pass query string or [graphql-query](https://github.com/district0x/graphql-query) data structure.
+
 ```clojure
 (run-query "{hello}")
 ;; => {:data {:hello "Hello world"}}
@@ -74,8 +74,8 @@ You can pass query string or [graphql-query](https://github.com/district0x/graph
 This namespace contains function for creating GraphQL expressjs middleware
 
 #### <a name="create-graphql-middleware">`create-graphql-middleware [opts]`
-Creates expressjs graphql middleware. Pass same opt as you'd pass into [GraphQL options](https://github.com/graphql/express-graphql#options). 
-For schema you can pass either string or built GraphQL object.  
+Creates expressjs graphql middleware. Pass same opt as you'd pass into [GraphQL options](https://github.com/graphql/express-graphql#options).
+For schema you can pass either string or built GraphQL object.
 
 ### <a name="districtservergraphqlutils"> district.server.graphql.utils
 
@@ -88,27 +88,27 @@ Builds a GraphQLSchema from a schema string and a resolvers map.
 
 ```clojure
 (let [schema "type Author {
-                         id: ID! 
+                         id: ID!
                          firstName: String
                          lastName: String
                          posts: [Post]
                        }
-                     
+
                        type Post {
                          id: ID!
                          title: String
                          author: Author
                          votes: Int
                        }
-                     
+
                        type Query {
                          posts(minVotes: Int): [Post]
                        }
-                     
+
                        type Mutation {
                          upvotePost (postId: ID!): Post
                        }
-                     
+
                        schema {
                          query: Query
                          mutation: Mutation
@@ -117,7 +117,7 @@ Builds a GraphQLSchema from a schema string and a resolvers map.
                  :Mutation {:upvote-post (fn [obj {:keys [post-id] :as args}])}
                  :Author {:posts (fn [{:keys [posts] :as author}])}
                  :Post {:author (fn [{:keys [author] :as post}])}}]
-  
+
   (build-schema schema resolvers {:kw->gql-name kw->gql-name
                                   :gql-name->kw gql-name->kw}))
 ```
