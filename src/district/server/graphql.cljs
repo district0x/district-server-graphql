@@ -72,13 +72,13 @@
 
                true
                (merge {:kw->gql-name kw->gql-name :gql-name->kw gql-name->kw}))]
-    (install-middlewares! app [(cors) {:path path :middleware (create-graphql-middleware opts)}])
     (install-middlewares! app (remove error-middleware? middlewares))
     (install-middlewares! app (filter error-middleware? middlewares))
+    (install-middlewares! app [(cors) {:path path :middleware (create-graphql-middleware opts)}])
+
     {:app app
      :server (.listen app port)
      :schema (:schema opts)
      :root-value (:root-value opts)
      :field-resolver (:field-resolver opts)
      :opts opts}))
-
