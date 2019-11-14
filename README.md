@@ -1,12 +1,14 @@
 # district-server-graphql
 
-[![Build Status](https://travis-ci.org/district0x/district-server-graphql.svg?branch=master)](https://travis-ci.org/district0x/district-server-graphql)
+[![CircleCI](https://circleci.com/gh/district0x/district-server-graphql.svg?style=svg)](https://circleci.com/gh/district0x/district-server-graphql)
 
 Clojurescript-node.js [mount](https://github.com/tolitius/mount) module for a district server, that sets up [GraphQL](http://graphql.org/) server.
 It uses [expressjs](https://expressjs.com/) and [express-graphql](https://github.com/graphql/express-graphql) to set up the server.
 
 ## Installation
-Add `[district0x/district-server-graphql "1.0.17"]` into your project.clj
+
+[![Clojars Project](https://img.shields.io/clojars/v/district0x/district-server-graphql.svg)](https://clojars.org/district0x/district-server-graphql)
+
 Include `[district.server.graphql]` in your CLJS file, where you use `mount/start`
 
 ## API Overview

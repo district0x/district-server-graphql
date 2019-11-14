@@ -1,15 +1,15 @@
-(defproject district0x/district-server-graphql "1.0.17"
+(defproject district0x/district-server-graphql "1.0.18-SNAPSHOT"
   :description "district0x server module for setting up GraphQL server"
   :url "https://github.com/district0x/district-server-graphql"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [district0x/district-graphql-utils "1.0.5"]
+                 [district0x/district-graphql-utils "1.0.9"]
                  [district0x/district-server-config "1.0.1"]
                  [district0x/graphql-query "1.0.6"]
-                 [mount "0.1.11"]
-                 [org.clojure/clojurescript "1.10.238"]]
+                 [mount "0.1.16"]
+                 [org.clojure/clojurescript "1.10.520"]]
 
   :npm {:dependencies [[express "4.15.3"]
                        [cors "2.8.4"]
@@ -32,7 +32,20 @@
                              [lein-doo "0.1.7"]]
                    :source-paths ["dev"]}}
 
-  :cljsbuild {:builds [{:id "tests"
+  :deploy-repositories [["snapshots" {:url "https://clojars.org/repo"
+                                      :username :env/clojars_username
+                                      :password :env/clojars_password
+                                      :sign-releases false}]
+                        ["releases"  {:url "https://clojars.org/repo"
+                                      :username :env/clojars_username
+                                      :password :env/clojars_password
+                                      :sign-releases false}]]
+
+  :release-tasks [["vcs" "assert-committed"]
+                  ["change" "version" "leiningen.release/bump-version" "release"]
+                  ["deploy"]]
+
+  :cljsbuild {:builds [{:id "nodejs-tests"
                         :source-paths ["src" "test"]
                         :figwheel {:on-jsload "tests.runner/-main"}
                         :compiler {:main "tests.runner"
