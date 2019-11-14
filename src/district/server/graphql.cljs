@@ -1,12 +1,12 @@
 (ns district.server.graphql
-  (:require
-    [cljs.core.async :refer [<! chan put!]]
-    [cljs.nodejs :as nodejs]
-    [district.graphql-utils :as graphql-utils]
-    [district.server.config :refer [config]]
-    [district.server.graphql.middleware :refer [build-schema create-graphql-middleware]]
-    [graphql-query.core :refer [graphql-query]]
-    [mount.core :as mount :refer [defstate]]))
+  (:require [cljs.core.async :refer [<! chan put!]]
+            [cljs.nodejs :as nodejs]
+            [district.graphql-utils :as graphql-utils]
+            [district.server.config :refer [config]]
+            [district.server.graphql.middleware :refer [build-schema create-graphql-middleware]]
+            [district.shared.async-helpers :refer [promise->]]
+            [graphql-query.core :refer [graphql-query]]
+            [mount.core :as mount :refer [defstate]]))
 
 (declare start)
 (declare stop)
@@ -19,6 +19,7 @@
 (def express (nodejs/require "express"))
 (def graphql-module (nodejs/require "graphql"))
 (def gql-sync (aget graphql-module "graphqlSync"))
+(def gql-async (aget graphql-module "graphql"))
 (def cors (nodejs/require "cors"))
 
 (defn stop [graphql]
@@ -56,6 +57,20 @@
                                     {:gql-name->kw (or gql-name->kw
                                                        (:gql-name->kw (:opts @graphql)))})))
 
+(defn run-query-async [query & [{:keys [:kw->gql-name :gql-name->kw]}]]
+  (let [query (if-not (string? query)
+                (graphql-query query {:kw->gql-name (or kw->gql-name
+                                                        (:kw->gql-name (:opts @graphql)))})
+                query)]
+    (promise-> (gql-async (:schema @graphql)
+                          query
+                          (:root-value @graphql)
+                          nil nil nil
+                          (:field-resolver @graphql))
+               (fn [data]
+                 (graphql-utils/js->clj-response data
+                                                 {:gql-name->kw (or gql-name->kw
+                                                                    (:gql-name->kw (:opts @graphql)))})))))
 
 (defn start [{:keys [:port :middlewares :path :kw->gql-name :gql-name->kw] :as opts}]
   (let [app (express)
