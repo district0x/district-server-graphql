@@ -3,7 +3,7 @@
 [![CircleCI](https://circleci.com/gh/district0x/district-server-graphql.svg?style=svg)](https://circleci.com/gh/district0x/district-server-graphql)
 
 Clojurescript-node.js [mount](https://github.com/tolitius/mount) module for a district server, that sets up [GraphQL](http://graphql.org/) server.
-It uses [expressjs](https://expressjs.com/) and [express-graphql](https://github.com/graphql/express-graphql) to set up the server.
+It uses [expressjs](https://expressjs.com/) and [apollo-server](https://www.apollographql.com) to set up the server.
 
 ## Installation
 
@@ -30,7 +30,8 @@ You can pass following args to graphql module:
 See list of [district-server-middlewares](https://github.com/search?q=topic%3Adistrict-server-middleware+org%3Adistrict0x&type=Repositories).
 * `:gql-name->kw` Function for converting GraphQL names into keywords. Default: [gql-name->kw](https://github.com/district0x/district-graphql-utils#gql-name-kw)
 * `:kw->gql-name` Function for converting keywords into GraphQL names. Default: [kw->gql-name](https://github.com/district0x/district-graphql-utils#kw-gql-name)
-* All [GraphQL options](https://github.com/graphql/express-graphql#options) as kebab-cased keywords
+* `:context-fn` Function to use to generate the context of the resolvers from the request 
+* All [ApolloServer options](https://www.apollographql.com/docs/apollo-server/api/apollo-server) as kebab-cased keywords
 
 ```clojure
 (ns my-district
@@ -76,7 +77,7 @@ You can pass query string or [graphql-query](https://github.com/district0x/graph
 This namespace contains function for creating GraphQL expressjs middleware
 
 #### <a name="create-graphql-middleware">`create-graphql-middleware [opts]`
-Creates expressjs graphql middleware. Pass same opt as you'd pass into [GraphQL options](https://github.com/graphql/express-graphql#options).
+Creates expressjs graphql middleware. Pass same opt as you'd pass into [ApolloServer options](https://www.apollographql.com/docs/apollo-server/api/apollo-server).
 For schema you can pass either string or built GraphQL object.
 
 ### <a name="districtservergraphqlutils"> district.server.graphql.utils
@@ -135,5 +136,5 @@ lein repl
 node tests-compiled/run-tests.js
 
 # To run tests without REPL
-lein doo node "tests" once
+lein doo node "nodejs-tests" once
 ```

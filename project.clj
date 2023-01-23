@@ -1,21 +1,22 @@
-(defproject district0x/district-server-graphql "1.0.18-SNAPSHOT"
+(defproject district0x/district-server-graphql "1.0.19-SNAPSHOT"
   :description "district0x server module for setting up GraphQL server"
   :url "https://github.com/district0x/district-server-graphql"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [district0x/district-graphql-utils "1.0.9"]
+                 [district0x/async-helpers "0.1.3"]
+                 [district0x/district-graphql-utils "1.0.11"]
                  [district0x/district-server-config "1.0.1"]
                  [district0x/graphql-query "1.0.6"]
                  [mount "0.1.16"]
                  [org.clojure/clojurescript "1.10.520"]]
 
-  :npm {:dependencies [[express "4.15.3"]
+  :npm {:dependencies [[express "4.18.2"]
                        [cors "2.8.4"]
-                       [express-graphql "0.6.12"]
-                       [graphql-tools "3.0.1"]
-                       [graphql "0.13.1"]]
+                       [graphql "16.6.0"]
+                       ["@graphql-tools/schema" "9.0.13"]
+                       ["@apollo/server" "4.3.0"]]
         :devDependencies [[ws "2.0.1"]
                           [xhr2 "0.1.4"]]}
 

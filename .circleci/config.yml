@@ -5,7 +5,10 @@ jobs:
     working_directory: ~/ci
     docker:
       # Primary container image where all steps run.
-      - image: district0x/cljs-dev
+      - image: 487920318758.dkr.ecr.us-west-2.amazonaws.com/cljs-web3-ci:node-18.7.0
+        aws_auth:
+          aws_access_key_id: $AWS_ACCESS_KEY_ID
+          aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
     steps:
       - checkout
       - restore_cache:
@@ -46,8 +49,10 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - test
+      - test:
+          context: district0x
       - deploy:
+          context: district0x
           requires:
             - test
           filters:
