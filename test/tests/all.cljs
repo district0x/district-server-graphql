@@ -52,6 +52,38 @@
                {:search [{:title "abc"}]}))
         (done)))))
 
+(deftest context-tests
+  (async done
+    (let [resolvers-map {:Query {:search
+                                 (fn [_ _ ctx _]
+                                   [{:title (:result ctx)}])}}
+          schema (utils/build-schema "
+          type Query {
+            search: [Item]
+          }
+          type Item {
+            title: String
+          }" resolvers-map {:kw->gql-name identity :gql-name->kw identity})
+          context-fn (fn [] {:result "abc"})
+          field-resolver (utils/build-default-field-resolver graphql-utils/gql-name->kw)]
+
+      (-> (mount/with-args
+            {:graphql {:port 6333
+                       :path "/graphql"
+                       :schema schema
+                       :field-resolver field-resolver
+                       :context-fn context-fn
+                       :graphiql true}})
+        (mount/start))
+
+      (go
+        (is (= (-> (<! (client/post "http://localhost:6333/graphql"
+                                    {:json-params {:query "{search {title}}"}}))
+                 :body
+                 :data)
+               {:search [{:title "abc"}]}))
+        (done)))))
+
 ;; https://github.com/apollographql/graphql-tools/
 (deftest graphql-tools-site-test
   (let [all-posts (atom [{:id "P1" :title "Post1" :author "A1" :votes 0}

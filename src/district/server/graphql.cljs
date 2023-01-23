@@ -1,6 +1,5 @@
 (ns district.server.graphql
-  (:require [cljs.core.async :refer [<! chan put!]]
-            [cljs.nodejs :as nodejs]
+  (:require [cljs.nodejs :as nodejs]
             [district.graphql-utils :as graphql-utils]
             [district.server.config :refer [config]]
             [district.server.graphql.middleware :refer [build-schema create-graphql-middleware]]
@@ -21,6 +20,7 @@
 (def gql-sync (aget graphql-module "graphqlSync"))
 (def gql-async (aget graphql-module "graphql"))
 (def cors (nodejs/require "cors"))
+(def body-parser (nodejs/require "body-parser"))
 
 (defn stop [graphql]
   (.close (:server @graphql)))
@@ -49,11 +49,10 @@
                 (graphql-query query {:kw->gql-name (or kw->gql-name
                                                         (:kw->gql-name (:opts @graphql)))})
                 query)]
-    (graphql-utils/js->clj-response (gql-sync (:schema @graphql)
-                                              query
-                                              (:root-value @graphql)
-                                              nil nil nil
-                                              (:field-resolver @graphql))
+    (graphql-utils/js->clj-response (gql-sync #js {:schema (:schema @graphql)
+                                                   :source query
+                                                   :rootValue (:root-value @graphql)
+                                                   :fieldResolver (:field-resolver @graphql) })
                                     {:gql-name->kw (or gql-name->kw
                                                        (:gql-name->kw (:opts @graphql)))})))
 
@@ -62,17 +61,16 @@
                 (graphql-query query {:kw->gql-name (or kw->gql-name
                                                         (:kw->gql-name (:opts @graphql)))})
                 query)]
-    (promise-> (gql-async (:schema @graphql)
-                          query
-                          (:root-value @graphql)
-                          nil nil nil
-                          (:field-resolver @graphql))
+    (promise-> (gql-async #js {:schema (:schema @graphql)
+                               :source query
+                               :rootValue (:root-value @graphql)
+                               :fieldResolver (:field-resolver @graphql)})
                (fn [data]
                  (graphql-utils/js->clj-response data
                                                  {:gql-name->kw (or gql-name->kw
                                                                     (:gql-name->kw (:opts @graphql)))})))))
 
-(defn start [{:keys [:port :middlewares :path :kw->gql-name :gql-name->kw] :as opts}]
+(defn start [{:keys [:port :middlewares :path :kw->gql-name :gql-name->kw :context-fn] :as opts}]
   (let [app (express)
         middlewares (flatten middlewares)
         kw->gql-name (or kw->gql-name graphql-utils/kw->gql-name)
@@ -89,7 +87,8 @@
                (merge {:kw->gql-name kw->gql-name :gql-name->kw gql-name->kw}))]
     (install-middlewares! app (remove error-middleware? middlewares))
     (install-middlewares! app (filter error-middleware? middlewares))
-    (install-middlewares! app [(cors) {:path path :middleware (create-graphql-middleware opts)}])
+    (install-middlewares! app [(cors) (.json body-parser)])
+    (create-graphql-middleware app path opts context-fn)
 
     {:app app
      :server (.listen app port)

@@ -1,8 +1,9 @@
 (ns district.server.graphql.utils
   (:require [camel-snake-kebab.extras :refer [transform-keys]]
-            [cljs.nodejs :as nodejs]))
+            [cljs.nodejs :as nodejs]
+            [district.graphql-utils :refer [js->clj-objects]]))
 
-(def make-executable-schema (aget (nodejs/require "graphql-tools") "makeExecutableSchema"))
+(def make-executable-schema (aget (nodejs/require "@graphql-tools/schema") "makeExecutableSchema"))
 
 (defn- build-resolvers
   "Given a map like {:Type {:field1 resolver-fn}}, a kw->gql-name and gql-name->kw,
@@ -16,7 +17,11 @@
                           (assoc fm (kw->gql-name field-name)
                                  (fn [o args ctx info]
                                    (field-fn o
-                                             (transform-keys gql-name->kw (js->clj args))
+                                             (->> args
+                                                  ; prevent issues with objects with null prototype
+                                                  ; (https://github.com/graphql/graphql-js/pull/504)
+                                                  (js->clj-objects)
+                                                  (transform-keys gql-name->kw))
                                              ctx
                                              info))))
                         {}
